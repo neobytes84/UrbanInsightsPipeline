@@ -1,7 +1,18 @@
+# Configuración sensible
 .env
+*.log
 __pycache__/
 chk/
-backups/
-data/
-*.archive
-*.log
+
+# Entornos virtuales
+venv/
+.venv/
+*.pyc
+
+# Archivos temporales o binarios
+*.pid
+*.tmp
+
+# Logs y data temporal
+logs/
+resilience_engine/
