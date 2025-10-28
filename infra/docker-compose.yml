@@ -1,0 +1,77 @@
+services:
+  redpanda:
+    image: redpandadata/redpanda:v24.1.10
+    command:
+      - redpanda start
+      - --overprovisioned
+      - --smp=1
+      - --memory=1G
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:29092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092,OUTSIDE://localhost:29092
+    ports:
+      - "29092:29092"     # HOST -> Kafka externo
+      - "9644:9644"       # Admin API (opcional)
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster info --brokers=localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27018:27017"     # HOST 27018 para no chocar con otros Mongos
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 })' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  resilience-agent:
+    image: python:3.11-slim
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    working_dir: /app
+    volumes:
+      - ../resilience_engine:/app:ro
+    command: ["python", "watchdog.py"]
+    environment:
+      KAFKA_BROKER: redpanda:9092          # interno
+      MONGO_URI: mongodb://mongo:27017     # interno
+      CONTROL_API: http://host.docker.internal:8000
+    restart: unless-stopped
+  
+  spark-runner:
+    image: apache/spark:3.5.1
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    working_dir: /workspace
+    volumes:
+      - ../:/workspace
+    environment:
+      - PYSPARK_PYTHON=python3
+    # Instalamos pymongo dentro del contenedor y lanzamos spark-submit con el conector Kafka
+    command: >
+      bash -lc "
+      python3 -m pip install --no-cache-dir pymongo &&
+      /opt/spark/bin/spark-submit
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1
+      jobs/streaming_kafka_to_mongo.py"
+    restart: "no"
+
+
+
+volumes:
+  mongo_data:
