@@ -2,6 +2,10 @@
 
 > **Demostrador Big Data Streaming** — Pipeline completo de ingesta, procesamiento y visualización de datos en tiempo real, construido con **FastAPI**, **Redpanda (Kafka API)**, **Apache Spark Structured Streaming** y **MongoDB**.
 
+* Autor: Neobytes84
+* Project_URL: https://github.com/neobytes84/diseno_patrones_python
+
+  
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Spark](https://img.shields.io/badge/Apache_Spark-3.5-orange)
 ![Kafka](https://img.shields.io/badge/Redpanda-Kafka_API-red)
