@@ -3,7 +3,7 @@
 > **Demostrador Big Data Streaming** — Pipeline completo de ingesta, procesamiento y visualización de datos en tiempo real, construido con **FastAPI**, **Redpanda (Kafka API)**, **Apache Spark Structured Streaming** y **MongoDB**.
 
 * Autor: Neobytes84
-* Project_URL: https://github.com/neobytes84/diseno_patrones_python
+* Project_URL: https://github.com/neobytes84/UrbanInsightsPipeline.git
 
   
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
@@ -42,12 +42,24 @@ docker compose -f infra/docker-compose.yml -p urban_insights up -d
 
 ## Ejecutar la API / Panel de control
 
-python -m venv ven
-ven\Scripts\activate   # (Windows)  o  source ven/bin/activate
-set PYTHONPATH=.       # export PYTHONPATH=. en Linux
-uvicorn backend.api:app --reload --port 8000
+# 🧱 1. Clonar el repositorio
+git clone https://github.com/<tuusuario>/urban-insights-pipeline.git
+cd urban-insights-pipeline
 
-Abre en el navegador 👉 http://127.0.0.1:8000/
+# ⚙️ 2. Configurar entorno Python
+python3 -m venv ven
+source ven/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# 🌍 3. Exportar variables de entorno
+export PYTHONPATH=.
+
+# 🐋 4. Levantar infraestructura base (Kafka, Mongo, Spark runner)
+docker compose -f infra/docker-compose.yml -p urban_insights up -d
+
+# 🧩 5. Iniciar el backend (panel FastAPI)
+uvicorn backend.api:app --reload --port 8000
 
 Desde ahí podrás:
 
